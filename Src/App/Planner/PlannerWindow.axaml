@@ -1,0 +1,42 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:planner="clr-namespace:Isitar.RoomPlanner.App.Planner"
+        xmlns:components="clr-namespace:Isitar.RoomPlanner.App.Components"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="Isitar.RoomPlanner.App.Planner.PlannerWindow"
+        x:DataType="planner:PlannerVm"
+        x:CompileBindings="True"
+        Title="Planner"
+        Padding="{DynamicResource MarginSmall}"
+>
+        <DockPanel>
+        <components:Title DockPanel.Dock="Top" Text="{Binding Plan.Name}" />
+        <StackPanel DockPanel.Dock="Right" HorizontalAlignment="Right" Margin="10 0 0 0">
+            <ListBox  Items="{Binding Plan.Furnitures}" Background="{DynamicResource Background}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Border Background="{DynamicResource LightBackground}" Margin="{DynamicResource MarginSmall}">
+                            <Border.Styles>
+                                <Style Selector="TextBlock">
+                                    <Setter Property="Foreground" Value="{DynamicResource PrimaryText}" />
+                                </Style>
+                            </Border.Styles>
+                            <StackPanel>
+                                <TextBlock Text="{Binding Name}" />
+                                <TextBlock Text="{Binding Width}" />
+                                <TextBlock Text="{Binding Length}" />
+                                <TextBlock Text="{Binding Height}" />
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+            <Button>Neues Möbel erfassen</Button>
+        </StackPanel>
+        
+        <Canvas Background="yellow" HorizontalAlignment="Stretch" MinWidth="500">
+        </Canvas>
+    </DockPanel>
+</Window>

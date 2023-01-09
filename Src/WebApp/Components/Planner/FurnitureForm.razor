@@ -1,0 +1,95 @@
+@using Isitar.RoomPlanner.Logic.Models
+<div class="modal is-active">
+    <div class="modal-background" />
+    <div class="modal-content">
+        <form class="box">
+            <div class="field is-horizontal">
+                <div class="field-label is-normal">
+                    <label class="label">Name</label>
+                </div>
+                <div class="field-body">
+                    <div class="field">
+                        <div class="control">
+                            <input class="input" @bind="name"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="field is-horizontal">
+                <div class="field-label is-normal">
+                    <label class="label">Dimensions (w/l/h)</label>
+                </div>
+                <div class="field-body">
+                    <div class="field">
+                        <div class="control">
+                            <input class="input" @bind="width" placeholder="width"/>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="control">
+                            <input class="input" @bind="length" placeholder="length"/>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="control">
+                            <input class="input" @bind="height" placeholder="height"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="field is-horizontal">
+                <div class="field-label is-normal">
+                    <label class="label">Color</label>    
+                </div>
+                <div class="field-body">
+                    <div class="control">
+                        <input class="input" @bind="color" />
+                    </div>                    
+                </div>
+            </div>
+            <div class="has-text-right">
+            <button type="button" class="button is-success" @onclick="Save">Save</button>    
+            <button type="button" class="button is-danger" @onclick="Cancel">Cancel</button>    
+            </div>
+            
+        </form>
+        </div>
+</div>
+
+@code
+{
+    [Parameter]
+    public EventCallback<Furniture?> FormSubmitted { get; set; }
+
+    [Parameter]
+    public Furniture? Furniture { get; set; }
+
+    private string? name;
+    private decimal? width;
+    private decimal? length;
+    private decimal? height;
+    private string? color;
+    
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        if (Furniture is not null)
+        {
+            name = Furniture.Name;
+            width = Furniture.Width;
+            length = Furniture.Length;
+            height = Furniture.Height;
+            color = Furniture.Color;
+        }
+    }
+
+    public async Task Save()
+    {
+        await FormSubmitted.InvokeAsync(new Furniture(name, width.Value, length.Value, height.Value, color));
+    }
+    
+    public async Task Cancel()
+    {
+        await FormSubmitted.InvokeAsync(null);
+    }
+}

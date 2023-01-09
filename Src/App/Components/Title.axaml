@@ -1,0 +1,30 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:components="clr-namespace:Isitar.RoomPlanner.App.Components"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="Isitar.RoomPlanner.App.Components.Title"
+             x:DataType="components:Title"
+             >
+    <UserControl.Styles>
+        <Style Selector="components|Title">
+            <Setter Property="Margin" Value="0 10 0 20"></Setter>
+        </Style>
+        <Style Selector="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource Accent}" />
+            <Setter Property="FontSize" Value="24" />
+            <Setter Property="FontWeight" Value="Bold" />
+        </Style>
+        <Style Selector="Border">
+            <Setter Property="Margin" Value="0 0 20 0" />
+            <Setter Property="BorderBrush" Value="{StaticResource Accent2}" />
+            <Setter Property="BorderThickness" Value="2" />
+            <Setter Property="CornerRadius" Value="5"></Setter>
+        </Style>
+    </UserControl.Styles>
+    <StackPanel HorizontalAlignment="Center">
+        <TextBlock Text="{Binding Text}" />
+        <Border />
+    </StackPanel>
+</UserControl>

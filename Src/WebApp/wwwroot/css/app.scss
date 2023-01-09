@@ -1,0 +1,30 @@
+@import "../../node_modules/bulma/sass/utilities/initial-variables";
+@import "../../node_modules/bulma/sass/utilities/functions";
+
+
+@import url('https://fonts.googleapis.com/css?family=Nunito:400,700');
+$family-sans-serif: "Nunito", sans-serif;
+
+$primary: cornflowerblue;
+$title-color: $primary;
+@import "../../node_modules/bulma/bulma";
+
+html, body, #app {
+  height: 100%;
+  width: 100%;
+}
+
+
+
+@each $direction, $suffix in $spacing-directions {
+  .has-border-#{$direction} {
+    border-#{$direction}: 2px solid;
+    
+    @each $name, $color in $colors {
+      &.is-#{$name} {
+        border-color: nth($color, 1) !important
+      }
+    }
+  }
+}
+

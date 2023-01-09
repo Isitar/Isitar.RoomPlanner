@@ -1,0 +1,36 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:system="clr-namespace:System;assembly=System.Runtime"
+             x:Class="Isitar.RoomPlanner.App.App">
+    
+    <Application.Resources>
+        <SolidColorBrush x:Key="Background">#2F3337</SolidColorBrush>
+        <SolidColorBrush x:Key="LightBackground">#42484D</SolidColorBrush>
+        <SolidColorBrush x:Key="PrimaryText">#7C8D88</SolidColorBrush>
+        <SolidColorBrush x:Key="Accent">#C05746</SolidColorBrush>
+        <SolidColorBrush x:Key="Accent2">#FFC15E</SolidColorBrush>
+        <system:Double x:Key="MarginD">10</system:Double>
+        <Thickness x:Key="Margin">10</Thickness>
+        <system:Double x:Key="MarginLargeD">20</system:Double>
+        <Thickness x:Key="MarginLarge">20</Thickness>
+        <system:Double x:Key="MarginSmallD">5</system:Double>
+        <Thickness x:Key="MarginSmall">5</Thickness>
+    </Application.Resources>
+    <Application.Styles>
+        <FluentTheme Mode="Dark"/>
+        <Style Selector="Window">
+            <Setter Property="Background" Value="{StaticResource Background}"></Setter>
+        </Style>
+        
+
+        <Style Selector="Button">
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="VerticalAlignment" Value="Stretch"/>
+            <Setter Property="FontSize" Value="20" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Padding" Value="{DynamicResource Margin}" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+    </Application.Styles>
+</Application>

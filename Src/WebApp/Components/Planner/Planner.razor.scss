@@ -1,0 +1,26 @@
+.main {
+  height: 100%;
+  display: grid;
+  grid-template:  "C S" auto
+                  / 0.75fr 0.25fr;
+  
+  > h2 {
+    grid-area: H;
+  }
+  > .canvas {
+    width: 100%;
+    height: 100%;
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    grid-area: C;
+    position: relative;
+    
+    > div {
+      position: absolute;
+    }
+  }
+  
+  > .toolbox {
+    grid-area: S;
+  }
+}

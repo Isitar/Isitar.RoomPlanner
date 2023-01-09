@@ -1,0 +1,28 @@
+@page "/planner"
+@using Isitar.RoomPlanner.Logic.Models
+@inject AppState AppState
+<div class="is-flex is-flex-direction-column" style="height: 100%">
+<h1 class="title">Planner</h1>
+<div class="is-flex-grow-1">
+    <Planner Plan="plan" />
+</div>
+</div>
+
+@code
+{
+    private Plan? plan;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        plan = AppState.Plan ?? new Plan("Fake Plan")
+        {
+            Furnitures = new List<Furniture>
+            {
+                new Furniture("Schrank", 1.5m, 1, 2, "red"),
+                new Furniture("Pult", 2, 1, 1.5m, "salmon"),
+                new Furniture("Bett", 2, 2, 1m, "green"),
+            },
+        };
+    }
+}

@@ -1,0 +1,217 @@
+@using Isitar.RoomPlanner.Logic.Models
+@using Microsoft.AspNetCore.Components.Forms
+@inject IJSRuntime JS
+
+<div class="main">
+    <div class="canvas" @onclick="CanvasClicked"
+    style="background-image: url(@Plan.BackgroundImage);"
+         >
+        @foreach (var placedFurniture in Plan.PlacedFurnitures)
+        {
+            <div style="
+                top: @ScaleToViewY(placedFurniture.Coordinates.Y)px;
+                left: @ScaleToViewX(placedFurniture.Coordinates.X)px;
+                background: @placedFurniture.Furniture.Color;
+                width: @ScaleToViewX(placedFurniture.Furniture.Width)px;
+                height: @ScaleToViewY(placedFurniture.Furniture.Length)px;
+                ">
+                @placedFurniture.Furniture.Name
+            </div>
+        }
+    </div>
+    <div class="toolbox">
+        <h2 class="is-size-5">Plan</h2>
+        <label>
+            <input class="input" placeholder="Name" @bind="Plan.Name"/>
+        </label><br/>
+        <label>
+            <InputFile type="file" OnChange="@SetBackgroundFile"/>
+        </label>
+                <hr />
+        <h2 class="is-size-5">Furnitures</h2>
+        <ul>
+            @foreach (var furniture in Plan.Furnitures)
+            {
+                <li class="box mb-1 p-3 @(furniture == selectedFurniture ? "has-border-top is-primary" : "")" 
+                    @onclick="() => selectedFurniture = furniture">
+                    <p class="is-bold">@furniture.Name</p>
+                    <p>
+                    <small>
+                        w: @furniture.Width, l: @furniture.Length, h: @furniture.Height
+                    </small>
+                    </p>
+                </li>
+            }
+        </ul>
+        <button class="button is-success is-block is-fullwidth" @onclick="() => showFurnitureForm = true">Möbel hinzufügen</button>
+        @if (showFurnitureForm)
+        {
+            <FurnitureForm FormSubmitted="(furniture) => { if (furniture is not null) { Plan.Furnitures.Add(furniture); } showFurnitureForm = false;}"></FurnitureForm>
+        }
+
+        <h2> Tools </h2>
+        <ul>
+            <li
+                @onclick="() => { isMeasuring = true; }"
+                class="@(isMeasuring ? "active" : "")">
+                Measure
+            </li>
+        </ul>
+        @if (isMeasuring)
+        {
+            <div>
+                <div>
+                    <label>
+                        Start
+                        <input @bind="@CurrentMeasure.StartX"/>
+                        <input @bind="@CurrentMeasure.StartY"/>
+                        <button type="button" @onclick="() => {CurrentMeasure.StartX = 0; CurrentMeasure.StartY = 0;}">x</button>
+                    </label>
+
+
+                </div>
+                <div>
+                    <label>
+                        End
+                        <input @bind="@CurrentMeasure.EndX"/>
+                        <input @bind="@CurrentMeasure.EndY"/>
+                        <button type="button" @onclick="() => {CurrentMeasure.EndX = 0; CurrentMeasure.EndY = 0;}">x</button>
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        Distance
+                        <input @bind="@CurrentMeasure.DistanceX"/>
+                        <input @bind="@CurrentMeasure.DistanceY"/>
+                    </label>
+                </div>
+            </div>
+            <button type="button" @onclick="ApplyScaling">Apply Scaling</button>
+            <button type="button" @onclick="() => { isMeasuring = false; CurrentMeasure = new Measures(); }">Cancel</button>
+        }
+
+        <code>
+            @Plan.CalibratedAtWidth @Plan.CalibratedWidthForOneUnit <br/>
+            @Plan.CalibratedAtHeight @Plan.CalibratedHeightForOneUnit <br/>
+        </code>
+    </div>
+</div>
+
+@code
+{
+    class Measures
+    {
+        public decimal StartX { get; set; }
+        public decimal StartY { get; set; }
+        public decimal EndX { get; set; }
+        public decimal EndY { get; set; }
+        public decimal DistanceX { get; set; }
+        public decimal DistanceY { get; set; }
+
+    }
+    
+    [Parameter]
+    public Plan Plan { get; set; }
+
+    [JSInvokable]
+    public async Task CanvasResized(decimal width, decimal height)
+    {
+        if (canvasDimensions != (width, height))
+        {
+            canvasDimensions = (width, height);
+            StateHasChanged();
+        }
+    }
+
+    private (decimal width, decimal height) canvasDimensions;
+    private DotNetObjectReference<Planner> objRef;
+
+    private bool showFurnitureForm = false;
+
+    private bool isMeasuring = false;
+
+    private Measures CurrentMeasure = new Measures();
+
+
+    private Furniture? selectedFurniture = null;
+
+    protected override void OnInitialized()
+    {
+        objRef = DotNetObjectReference.Create(this);
+    }
+
+    
+    public void Dispose()
+    {
+        objRef?.Dispose();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await JS.InvokeVoidAsync("addCanvasListener", objRef);
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    private decimal ScaleToViewX(decimal m) => m * Plan.ScaleFactorX(canvasDimensions.width);
+
+    private decimal ScaleToViewY(decimal m) => m * Plan.ScaleFactorY(canvasDimensions.height);
+
+    private decimal ScaleToPlanX(decimal px) => px / Plan.ScaleFactorX(canvasDimensions.width);
+
+    private decimal ScaleToPlanY(decimal px) => px / Plan.ScaleFactorY(canvasDimensions.height);
+
+    private void CanvasClicked(MouseEventArgs eventArgs)
+    {
+        if (isMeasuring)
+        {
+            if (CurrentMeasure.StartX > 0 || CurrentMeasure.StartY > 0)
+            {
+                CurrentMeasure.EndX = (decimal)eventArgs.OffsetX;
+                CurrentMeasure.EndY = (decimal)eventArgs.OffsetY;
+            }
+            else
+            {
+                CurrentMeasure.StartX = (decimal)eventArgs.OffsetX;
+                CurrentMeasure.StartY = (decimal)eventArgs.OffsetY;
+            }
+            return;
+        }
+        
+        if (selectedFurniture is not null)
+        {
+            Plan.PlacedFurnitures.Add(new PlacedFurniture
+            {
+                Furniture = selectedFurniture,
+                Coordinates = (ScaleToPlanX((decimal)eventArgs.OffsetX),ScaleToPlanY((decimal) eventArgs.OffsetY)),
+            });
+        }
+    }
+
+    private async Task ApplyScaling()
+    {
+        if (CurrentMeasure.DistanceX == 0m)
+        {
+            return;
+        }
+
+        var pxDistanceX = Math.Abs(CurrentMeasure.EndX - CurrentMeasure.StartX);
+        var pxDistanceY = Math.Abs(CurrentMeasure.EndY - CurrentMeasure.StartY);
+
+        Plan.CalibratedAtWidth = canvasDimensions.width;
+        Plan.CalibratedWidthForOneUnit = pxDistanceX / CurrentMeasure.DistanceX;
+
+        Plan.CalibratedAtHeight = canvasDimensions.height;
+        Plan.CalibratedHeightForOneUnit = pxDistanceY == 0 || CurrentMeasure.DistanceY == 0 ? Plan.CalibratedWidthForOneUnit : pxDistanceY / CurrentMeasure.DistanceY;
+        
+        isMeasuring = false;
+    }
+
+    private async Task SetBackgroundFile(InputFileChangeEventArgs e)
+    {
+        using var ms = new MemoryStream();
+        await e.File.OpenReadStream().CopyToAsync(ms);
+        var content = Convert.ToBase64String(ms.ToArray());
+        Plan.BackgroundImage = $"data:{e.File.ContentType};base64,{content}";
+        
+    }
+}

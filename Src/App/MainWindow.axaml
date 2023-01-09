@@ -1,0 +1,22 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:components="clr-namespace:Isitar.RoomPlanner.App.Components"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="Isitar.RoomPlanner.App.MainWindow"
+        Title="Isitar - Room Planner">
+    <Window.Styles>
+        <Style Selector="StackPanel.menu">
+            <Setter Property="Spacing" Value="{StaticResource MarginD}" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+        </Style>
+     
+    </Window.Styles>
+    
+    <StackPanel Classes="menu">
+        <components:Title Text="Isitar - Room Planner" />
+        <Button Name="BtnNewPlan">Neuer Plan</Button>
+        <Button Name="BtnOpenPlan">Plan öffnen</Button>
+    </StackPanel>
+</Window>
