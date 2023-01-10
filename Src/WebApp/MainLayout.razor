@@ -1,8 +1,10 @@
 ﻿@inherits LayoutComponentBase
+ @inject NavigationManager NavigationManager
+
 <div class="root">
     <nav class="navbar">
         <ul class="navbar-menu">
-            <li class="navbar-item"><a href="/">Home</a></li>
+            <li class="navbar-item"><a href="@NavigationManager.BaseUri">Home</a></li>
         </ul>
     </nav>
     <main>
