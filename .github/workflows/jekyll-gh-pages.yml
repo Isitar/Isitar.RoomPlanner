@@ -56,12 +56,9 @@ jobs:
           output-dir: ./_site
           # Whether to skip the build using the --no-build flag (default value is 'true').
           skip-build: false
-        
-      #- name: Build with Jekyll
-      #  uses: actions/jekyll-build-pages@v1
-      #  with:
-      #    source: ./
-      #    destination: ./_site
+
+      - name: move folder
+        run: mv ./_site/wwwroot/* ./_site
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
 
