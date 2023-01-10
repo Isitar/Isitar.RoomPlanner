@@ -5,12 +5,14 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+        <GHPagesBase></GHPagesBase>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="LibSassBuilder" Version="3.0.0" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.1" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.1" PrivateAssets="all" />
+        <PackageReference Include="PublishSPAforGitHubPages.Build" Version="2.0.2" />
     </ItemGroup>
 
     <ItemGroup>
