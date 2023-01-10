@@ -35,7 +35,7 @@ jobs:
         uses: EasyDesk/action-dotnet-publish@v1.0.0
         with:
           # Path to the project to publish.
-          path: Src/Webapp
+          path: ./Src/WebApp/WebAoo,csproj
           # Directory where all packages will be put (default value is 'packages').
           output-dir: ./_site
           # Whether to skip the build using the --no-build flag (default value is 'true').
