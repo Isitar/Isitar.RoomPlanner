@@ -1,0 +1,6 @@
+/* /Components/Planner/Planner.razor.rz.scp.css */
+.main[b-styyotnpu2]{height:100%;display:grid;grid-template:"C S" auto / 0.75fr 0.25fr}.main>h2[b-styyotnpu2]{grid-area:H}.main>.canvas[b-styyotnpu2]{width:100%;height:100%;background:repeating-linear-gradient(45deg, aliceblue, transparent, aliceblue 1%),repeating-linear-gradient(-45deg, aliceblue, transparent, aliceblue 1%);background-size:100% 100%;background-repeat:no-repeat;grid-area:C;position:relative}.main>.canvas.is-measuring[b-styyotnpu2]{cursor:crosshair}.main>.canvas>div[b-styyotnpu2]{position:absolute}.main>.canvas>div.placed-furniture[b-styyotnpu2]{cursor:move}.main>.toolbox[b-styyotnpu2]{grid-area:S}
+/* /MainLayout.razor.rz.scp.css */
+.root[b-wr2kz64hoa]{height:100%;display:flex;flex-direction:column}.root>nav[b-wr2kz64hoa]{flex:0 0 auto}.root>main[b-wr2kz64hoa]{flex:1 0 auto}.root>main>*[b-wr2kz64hoa]{height:100%}
+/* /Pages/PlannerPage.razor.rz.scp.css */
+.planner[b-9pxo4kkikd]{flex:1 0 auto}

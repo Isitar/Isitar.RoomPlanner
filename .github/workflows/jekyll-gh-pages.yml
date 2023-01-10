@@ -43,7 +43,7 @@ jobs:
           restore-keys: npm-
 
       - name: Install dependencies
-        run: cd ./Src/Webapp && npm ci --ignore-scripts && cd ../..
+        run: cd ./Src/WebApp && npm ci --ignore-scripts && cd ../..
         
       - name: Dotnet Publish
         # You may pin to the exact commit or the version.
