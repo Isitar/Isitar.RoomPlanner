@@ -13,7 +13,7 @@ public partial class Title : UserControl
             (o, v) => o.Text = v);
 
     private string text = "Titel";
-    
+
     public string Text
     {
         get => text;
@@ -22,7 +22,7 @@ public partial class Title : UserControl
     public Title()
     {
         InitializeComponent();
-        
+
         DataContext = this;
     }
 

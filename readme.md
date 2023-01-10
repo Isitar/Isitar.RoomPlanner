@@ -9,6 +9,7 @@ Implemented with .NET Blazor as wasm (Web-Assembly) application.
  - Measure real distance
  - Scale furnitures in plan
  - Plan background
+- move planned furnitures
 
 ## Todos
 
@@ -20,7 +21,6 @@ Implemented with .NET Blazor as wasm (Web-Assembly) application.
 - Load
 
 ### Planning
-- move planned furnitures
 - delete planned furnitures
 
 ### Angles
@@ -28,6 +28,6 @@ Implemented with .NET Blazor as wasm (Web-Assembly) application.
 - Scale correctly with angles
 
 ### UI
-- measure tool
+- measure tool (50%)
 - colors :)
 - color dropdown for new furnitures

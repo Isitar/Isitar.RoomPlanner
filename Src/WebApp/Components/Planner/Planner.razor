@@ -3,9 +3,22 @@
 @inject IJSRuntime JS
 
 <div class="main">
-    <div class="canvas" @onclick="CanvasClicked"
-    style="background-image: url(@Plan.BackgroundImage);"
-         >
+    <div class="canvas
+@(isMeasuring ? "is-measuring" : "")
+" @onclick="CanvasClicked"
+         style="@(!string.IsNullOrWhiteSpace(Plan.BackgroundImage) ? $"background-image: url({Plan.BackgroundImage});" : "")">
+        @if (isMeasuring && currentMeasure.EndX != 0m)
+        {
+            <div style="border: 3px solid red;
+                    top: @(Math.Min(currentMeasure.EndY, currentMeasure.StartY))px;
+                    left: @(Math.Min(currentMeasure.EndX, currentMeasure.StartX))px;
+                    width: @(Math.Abs(currentMeasure.EndX - currentMeasure.StartX))px;
+                    height: @(Math.Abs(currentMeasure.EndY - currentMeasure.StartY))px;
+"
+            />
+            
+        }
+        
         @foreach (var placedFurniture in Plan.PlacedFurnitures)
         {
             <div style="
@@ -14,7 +27,11 @@
                 background: @placedFurniture.Furniture.Color;
                 width: @ScaleToViewX(placedFurniture.Furniture.Width)px;
                 height: @ScaleToViewY(placedFurniture.Furniture.Length)px;
-                ">
+                "
+                 draggable="true"
+                 @ondragstart="async (e) => await DragStarted(e, placedFurniture)"
+                 @ondragend="async e => await DragEnded(e)"
+                 class="placed-furniture">
                 @placedFurniture.Furniture.Name
             </div>
         }
@@ -27,18 +44,18 @@
         <label>
             <InputFile type="file" OnChange="@SetBackgroundFile"/>
         </label>
-                <hr />
+        <hr/>
         <h2 class="is-size-5">Furnitures</h2>
         <ul>
             @foreach (var furniture in Plan.Furnitures)
             {
-                <li class="box mb-1 p-3 @(furniture == selectedFurniture ? "has-border-top is-primary" : "")" 
+                <li class="box mb-1 p-3 @(furniture == selectedFurniture ? "has-border-top is-primary" : "")"
                     @onclick="() => selectedFurniture = furniture">
                     <p class="is-bold">@furniture.Name</p>
                     <p>
-                    <small>
-                        w: @furniture.Width, l: @furniture.Length, h: @furniture.Height
-                    </small>
+                        <small>
+                            w: @furniture.Width, l: @furniture.Length, h: @furniture.Height
+                        </small>
                     </p>
                 </li>
             }
@@ -46,53 +63,51 @@
         <button class="button is-success is-block is-fullwidth" @onclick="() => showFurnitureForm = true">Möbel hinzufügen</button>
         @if (showFurnitureForm)
         {
-            <FurnitureForm FormSubmitted="(furniture) => { if (furniture is not null) { Plan.Furnitures.Add(furniture); } showFurnitureForm = false;}"></FurnitureForm>
+            <FurnitureForm FormSubmitted="furniture => { if (furniture is not null) { Plan.Furnitures.Add(furniture); } showFurnitureForm = false;}"></FurnitureForm>
         }
 
         <h2> Tools </h2>
         <ul>
             <li
                 @onclick="() => { isMeasuring = true; }"
-                class="@(isMeasuring ? "active" : "")">
+                class="box mb-1 p-3 @(isMeasuring ? "has-border-top is-primary" : "")">
                 Measure
+                @if (isMeasuring)
+                        {
+                                <div class="field">
+                                    <label class="label">Start</label>
+                                    <div class="field-body">
+                                        <input class="input" @bind="@currentMeasure.StartX"/>
+                                        <input class="input" @bind="@currentMeasure.StartY"/>
+                                        <button class="button is-danger" type="button" @onclick="() => {currentMeasure.StartX = 0; currentMeasure.StartY = 0;}">x</button>
+                                    </div>
+                                </div>
+                                <div class="field">
+                                    <label class="label">End</label>
+                                    <div class="field-body">
+                                        <input class="input" @bind="@currentMeasure.EndX"/>
+                                        <input class="input" @bind="@currentMeasure.EndY"/>
+                                        <button class="button is-danger" type="button" @onclick="() => {currentMeasure.EndX = 0; currentMeasure.EndY = 0;}">x</button>
+                                    </div>
+                                </div>
+                
+                                <div class="field">
+                                    <label class="label">
+                                        Distance
+                                    </label>
+                                    <div class="field-body">
+                                        <input class="input" @bind="@currentMeasure.DistanceX"/>
+                                        <input class="input" @bind="@currentMeasure.DistanceY"/>
+                                    </div>
+                                </div>
+                            <button type="button" class="button is-success" @onclick="ApplyScaling" @onclick:stopPropagation="true">Apply Scaling</button>
+                            <button type="button" class="button is-danger" @onclick="() => { isMeasuring = false; currentMeasure = new Measures(); }" @onclick:stopPropagation="true">Cancel</button>
+                        }
             </li>
         </ul>
-        @if (isMeasuring)
-        {
-            <div>
-                <div>
-                    <label>
-                        Start
-                        <input @bind="@CurrentMeasure.StartX"/>
-                        <input @bind="@CurrentMeasure.StartY"/>
-                        <button type="button" @onclick="() => {CurrentMeasure.StartX = 0; CurrentMeasure.StartY = 0;}">x</button>
-                    </label>
-
-
-                </div>
-                <div>
-                    <label>
-                        End
-                        <input @bind="@CurrentMeasure.EndX"/>
-                        <input @bind="@CurrentMeasure.EndY"/>
-                        <button type="button" @onclick="() => {CurrentMeasure.EndX = 0; CurrentMeasure.EndY = 0;}">x</button>
-                    </label>
-                </div>
-                <div>
-                    <label>
-                        Distance
-                        <input @bind="@CurrentMeasure.DistanceX"/>
-                        <input @bind="@CurrentMeasure.DistanceY"/>
-                    </label>
-                </div>
-            </div>
-            <button type="button" @onclick="ApplyScaling">Apply Scaling</button>
-            <button type="button" @onclick="() => { isMeasuring = false; CurrentMeasure = new Measures(); }">Cancel</button>
-        }
+        
 
         <code>
-            @Plan.CalibratedAtWidth @Plan.CalibratedWidthForOneUnit <br/>
-            @Plan.CalibratedAtHeight @Plan.CalibratedHeightForOneUnit <br/>
         </code>
     </div>
 </div>
@@ -107,11 +122,10 @@
         public decimal EndY { get; set; }
         public decimal DistanceX { get; set; }
         public decimal DistanceY { get; set; }
-
     }
-    
+
     [Parameter]
-    public Plan Plan { get; set; }
+    public Plan Plan { get; set; } = null!;
 
     [JSInvokable]
     public async Task CanvasResized(decimal width, decimal height)
@@ -130,17 +144,16 @@
 
     private bool isMeasuring = false;
 
-    private Measures CurrentMeasure = new Measures();
-
+    private Measures currentMeasure = new();
 
     private Furniture? selectedFurniture = null;
+    private PlacedFurniture? currentlySelectedPlacedFurniture = null;
 
     protected override void OnInitialized()
     {
         objRef = DotNetObjectReference.Create(this);
     }
 
-    
     public void Dispose()
     {
         objRef?.Dispose();
@@ -152,57 +165,69 @@
         await base.OnAfterRenderAsync(firstRender);
     }
 
-    private decimal ScaleToViewX(decimal m) => m * Plan.ScaleFactorX(canvasDimensions.width);
+    private decimal ScaleToViewX(decimal m)
+    {
+        return m * Plan.ScaleFactorX(canvasDimensions.width);
+    }
 
-    private decimal ScaleToViewY(decimal m) => m * Plan.ScaleFactorY(canvasDimensions.height);
+    private decimal ScaleToViewY(decimal m)
+    {
+        return m * Plan.ScaleFactorY(canvasDimensions.height);
+    }
 
-    private decimal ScaleToPlanX(decimal px) => px / Plan.ScaleFactorX(canvasDimensions.width);
+    private decimal ScaleToPlanX(decimal px)
+    {
+        return px / Plan.ScaleFactorX(canvasDimensions.width);
+    }
 
-    private decimal ScaleToPlanY(decimal px) => px / Plan.ScaleFactorY(canvasDimensions.height);
+    private decimal ScaleToPlanY(decimal px)
+    {
+        return px / Plan.ScaleFactorY(canvasDimensions.height);
+    }
 
     private void CanvasClicked(MouseEventArgs eventArgs)
     {
         if (isMeasuring)
         {
-            if (CurrentMeasure.StartX > 0 || CurrentMeasure.StartY > 0)
+            if (currentMeasure.StartX > 0 || currentMeasure.StartY > 0)
             {
-                CurrentMeasure.EndX = (decimal)eventArgs.OffsetX;
-                CurrentMeasure.EndY = (decimal)eventArgs.OffsetY;
+                currentMeasure.EndX = (decimal)eventArgs.OffsetX;
+                currentMeasure.EndY = (decimal)eventArgs.OffsetY;
             }
             else
             {
-                CurrentMeasure.StartX = (decimal)eventArgs.OffsetX;
-                CurrentMeasure.StartY = (decimal)eventArgs.OffsetY;
+                currentMeasure.StartX = (decimal)eventArgs.OffsetX;
+                currentMeasure.StartY = (decimal)eventArgs.OffsetY;
             }
             return;
         }
-        
+
         if (selectedFurniture is not null)
         {
             Plan.PlacedFurnitures.Add(new PlacedFurniture
             {
                 Furniture = selectedFurniture,
-                Coordinates = (ScaleToPlanX((decimal)eventArgs.OffsetX),ScaleToPlanY((decimal) eventArgs.OffsetY)),
+                Coordinates = (ScaleToPlanX((decimal)eventArgs.OffsetX),ScaleToPlanY((decimal)eventArgs.OffsetY)),
             });
         }
     }
 
     private async Task ApplyScaling()
     {
-        if (CurrentMeasure.DistanceX == 0m)
+        if (currentMeasure.DistanceX == 0m)
         {
             return;
         }
 
-        var pxDistanceX = Math.Abs(CurrentMeasure.EndX - CurrentMeasure.StartX);
-        var pxDistanceY = Math.Abs(CurrentMeasure.EndY - CurrentMeasure.StartY);
+        var pxDistanceX = Math.Abs(currentMeasure.EndX - currentMeasure.StartX);
+        var pxDistanceY = Math.Abs(currentMeasure.EndY - currentMeasure.StartY);
 
         Plan.CalibratedAtWidth = canvasDimensions.width;
-        Plan.CalibratedWidthForOneUnit = pxDistanceX / CurrentMeasure.DistanceX;
+        Plan.CalibratedWidthForOneUnit = pxDistanceX / currentMeasure.DistanceX;
 
         Plan.CalibratedAtHeight = canvasDimensions.height;
-        Plan.CalibratedHeightForOneUnit = pxDistanceY == 0 || CurrentMeasure.DistanceY == 0 ? Plan.CalibratedWidthForOneUnit : pxDistanceY / CurrentMeasure.DistanceY;
-        
+        Plan.CalibratedHeightForOneUnit = pxDistanceY == 0 || currentMeasure.DistanceY == 0 ? Plan.CalibratedWidthForOneUnit : pxDistanceY / currentMeasure.DistanceY;
+
         isMeasuring = false;
     }
 
@@ -212,6 +237,25 @@
         await e.File.OpenReadStream().CopyToAsync(ms);
         var content = Convert.ToBase64String(ms.ToArray());
         Plan.BackgroundImage = $"data:{e.File.ContentType};base64,{content}";
-        
+    }
+
+    private async Task DragStarted(DragEventArgs e, PlacedFurniture placedFurniture)
+    {
+        startDragX = (decimal) e.ClientX;
+        startDragY = (decimal)e.ClientY;
+        currentlySelectedPlacedFurniture = placedFurniture;
+    }
+
+    private decimal startDragX = 0;
+    private decimal startDragY = 0;
+    
+    private async Task DragEnded(DragEventArgs e)
+    {
+       var endDragX = (decimal)e.ClientX;
+      var  endDragY = (decimal)e.ClientY;
+        currentlySelectedPlacedFurniture.Coordinates = (currentlySelectedPlacedFurniture.Coordinates.X + ScaleToPlanX(endDragX - startDragX), 
+            currentlySelectedPlacedFurniture.Coordinates.Y + ScaleToPlanY(endDragY - startDragY)
+            );
+        currentlySelectedPlacedFurniture = null;
     }
 }

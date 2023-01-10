@@ -10,13 +10,22 @@
   > .canvas {
     width: 100%;
     height: 100%;
+    background: repeating-linear-gradient(45deg, aliceblue, transparent, aliceblue 1%),
+      repeating-linear-gradient(-45deg, aliceblue, transparent, aliceblue 1%);
     background-size: 100% 100%;
     background-repeat: no-repeat;
     grid-area: C;
     position: relative;
+
+    &.is-measuring {
+      cursor: crosshair;
+    }
     
     > div {
       position: absolute;
+      &.placed-furniture {
+        cursor: move;
+      }
     }
   }
   
