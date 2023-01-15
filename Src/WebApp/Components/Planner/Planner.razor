@@ -1,5 +1,7 @@
 @using Isitar.RoomPlanner.Logic.Models
 @using Microsoft.AspNetCore.Components.Forms
+@using System.Text.Json
+@using Newtonsoft.Json
 @inject IJSRuntime JS
 
 <div class="main">
@@ -123,9 +125,10 @@
                </div>
                <button class="button is-danger" type="button" @onclick="() => { RemovePlacedFurniture(currentlySelectedPlacedFurniture); currentlySelectedPlacedFurniture = null;}">x</button>
             </div>
-                                                                                  
-                                                                                  
         }
+        <div class="mt-3">
+            <button type="button" class="button is-fullwidth is-success is-large" @onclick="SavePlan" >Save</button>
+        </div>
     </div>
 </div>
 
@@ -181,28 +184,14 @@
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await JS.InvokeVoidAsync("addCanvasListener", objRef);
+        await JS.InvokeAsync<IJSObjectReference>("import", "./Components/Planner/Planner.razor.js");
         await base.OnAfterRenderAsync(firstRender);
     }
 
-    private double ScaleToViewX(double m)
-    {
-        return m * Plan.ScaleFactorX(svgCanvasViewBox.width);
-    }
-
-    private double ScaleToViewY(double m)
-    {
-        return m * Plan.ScaleFactorY(svgCanvasViewBox.height);
-    }
-
-    private double ScaleToPlanX(double px)
-    {
-        return px / Plan.ScaleFactorX(svgCanvasViewBox.width);
-    }
-
-    private double ScaleToPlanY(double px)
-    {
-        return px / Plan.ScaleFactorY(svgCanvasViewBox.height);
-    }
+    private double ScaleToViewX(double m) => m * Plan.ScaleFactorX(svgCanvasViewBox.width);
+    private double ScaleToViewY(double m) => m * Plan.ScaleFactorY(svgCanvasViewBox.height);
+    private double ScaleToPlanX(double px) => px / Plan.ScaleFactorX(svgCanvasViewBox.width);
+    private double ScaleToPlanY(double px) => px / Plan.ScaleFactorY(svgCanvasViewBox.height);
 
     private void CanvasClicked(MouseEventArgs e)
     {
@@ -247,15 +236,17 @@
         {
             return;
         }
+        await InvokeAsync(() =>
+        {
+            var pxDistanceX = Math.Abs(currentMeasure.EndX - currentMeasure.StartX);
+            var pxDistanceY = Math.Abs(currentMeasure.EndY - currentMeasure.StartY);
 
-        var pxDistanceX = Math.Abs(currentMeasure.EndX - currentMeasure.StartX);
-        var pxDistanceY = Math.Abs(currentMeasure.EndY - currentMeasure.StartY);
+            Plan.CalibratedAtWidth = svgCanvasViewBox.width;
+            Plan.CalibratedWidthForOneUnit = pxDistanceX / currentMeasure.DistanceX;
 
-        Plan.CalibratedAtWidth = svgCanvasViewBox.width;
-        Plan.CalibratedWidthForOneUnit = pxDistanceX / currentMeasure.DistanceX;
-
-        Plan.CalibratedAtHeight = svgCanvasViewBox.height;
-        Plan.CalibratedHeightForOneUnit = pxDistanceY == 0 || currentMeasure.DistanceY == 0 ? Plan.CalibratedWidthForOneUnit : pxDistanceY / currentMeasure.DistanceY;
+            Plan.CalibratedAtHeight = svgCanvasViewBox.height;
+            Plan.CalibratedHeightForOneUnit = pxDistanceY == 0 || currentMeasure.DistanceY == 0 ? Plan.CalibratedWidthForOneUnit : pxDistanceY / currentMeasure.DistanceY;
+        });
 
         isMeasuring = false;
     }
@@ -270,7 +261,7 @@
 
     private async Task DragStarted(MouseEventArgs e, PlacedFurniture placedFurniture)
     {
-        (startDragX, startDragY) = ((double)e.ClientX, (double)e.ClientY);
+        (startDragX, startDragY) = (e.ClientX, e.ClientY);
         currentlySelectedPlacedFurniture = placedFurniture;
         isDragging = true;
         Console.WriteLine("dragstarted called");
@@ -281,7 +272,7 @@
 
     private (double x, double y) RelativeCoordinates(MouseEventArgs e)
     {
-        return RelativeCoordinates(((double)e.OffsetX, (double)e.OffsetY));
+        return RelativeCoordinates((e.OffsetX, e.OffsetY));
     }
 
     private (double x, double y) RelativeCoordinates((double x, double y) coords)
@@ -298,13 +289,14 @@
             {
                 return;
             }
-            var (deltaX, deltaY) = RelativeCoordinates(((double)e.ClientX - startDragX, (double)e.ClientY - startDragY));
+        await InvokeAsync(() =>
+        {
+            var (deltaX, deltaY) = RelativeCoordinates((e.ClientX - startDragX, e.ClientY - startDragY));
             currentlySelectedPlacedFurniture.Coordinates = new Coordinates(
-                currentlySelectedPlacedFurniture.Coordinates.X + ScaleToPlanX(deltaX), 
-                    currentlySelectedPlacedFurniture.Coordinates.Y + ScaleToPlanY(deltaY)
+                currentlySelectedPlacedFurniture.Coordinates.X + ScaleToPlanX(deltaX),
+                currentlySelectedPlacedFurniture.Coordinates.Y + ScaleToPlanY(deltaY)
                 );
-        
-
+        });
         currentlySelectedPlacedFurniture = null;
         isDragging = false;
     }
@@ -315,16 +307,29 @@
         {
             return;
         }
-            var (deltaX, deltaY) = RelativeCoordinates(((double)e.ClientX - startDragX, (double)e.ClientY - startDragY));
+        await InvokeAsync(() =>
+        {
+            var (deltaX, deltaY) = RelativeCoordinates((e.ClientX - startDragX, e.ClientY - startDragY));
             currentlySelectedPlacedFurniture.Coordinates = new Coordinates(
-                currentlySelectedPlacedFurniture.Coordinates.X + ScaleToPlanX(deltaX), 
-                    currentlySelectedPlacedFurniture.Coordinates.Y + ScaleToPlanY(deltaY)
+                currentlySelectedPlacedFurniture.Coordinates.X + ScaleToPlanX(deltaX),
+                currentlySelectedPlacedFurniture.Coordinates.Y + ScaleToPlanY(deltaY)
                 );
-            (startDragX, startDragY) = ((double)e.ClientX, (double)e.ClientY);
+            (startDragX, startDragY) = (e.ClientX, e.ClientY);
+        });
     }
 
     private void RemovePlacedFurniture(PlacedFurniture placedFurniture)
     {
         Plan.PlacedFurnitures.Remove(placedFurniture);
+    }
+
+    private async Task SavePlan()
+    {
+        var serializedStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(Plan)));
+        var fileName = $"{Plan.Name}.json";
+
+        using var streamRef = new DotNetStreamReference(stream: serializedStream);
+
+        await JS.InvokeVoidAsync("downloadFileFromStream", fileName, streamRef);
     }
 }

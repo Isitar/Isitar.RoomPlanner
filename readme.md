@@ -13,15 +13,13 @@ Implemented with .NET Blazor as wasm (Web-Assembly) application.
 - Furniture angle
 - Scale correctly with angles
 - delete planned furnitures
+- Save
+- Load
 
 ## Todos
 
 ### misc
 - translations
-
-### Persistence
-- Save
-- Load
 
 
 ### UI
