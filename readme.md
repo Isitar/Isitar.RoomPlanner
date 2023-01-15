@@ -21,6 +21,10 @@ Implemented with .NET Blazor as wasm (Web-Assembly) application.
 ### misc
 - translations
 
+### furniture
+- background image
+- update furnitures
+- remove furnitures
 
 ### UI
 - measure tool (50%)
