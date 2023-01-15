@@ -10,6 +10,9 @@ Implemented with .NET Blazor as wasm (Web-Assembly) application.
  - Scale furnitures in plan
  - Plan background
 - move planned furnitures
+- Furniture angle
+- Scale correctly with angles
+- delete planned furnitures
 
 ## Todos
 
@@ -20,12 +23,6 @@ Implemented with .NET Blazor as wasm (Web-Assembly) application.
 - Save
 - Load
 
-### Planning
-- delete planned furnitures
-
-### Angles
-- Furniture angle
-- Scale correctly with angles
 
 ### UI
 - measure tool (50%)

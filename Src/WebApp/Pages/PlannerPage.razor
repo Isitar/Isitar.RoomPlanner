@@ -19,10 +19,14 @@
         {
             Furnitures = new List<Furniture>
             {
-                new Furniture("Schrank", 1.5m, 1, 2, "red"),
-                new Furniture("Pult", 2, 1, 1.5m, "salmon"),
-                new Furniture("Bett", 2, 2, 1m, "green"),
+                new("Schrank", 1.5d, 1, 2, "red"),
+                new("Pult", 2, 1, 1.5, "salmon"),
+                new("Bett", 2, 2, 1, "green"),
             },
+            CalibratedAtHeight = 1000,
+            CalibratedAtWidth = 1000,
+            CalibratedHeightForOneUnit = 23,
+            CalibratedWidthForOneUnit = 23,
         };
     }
 }

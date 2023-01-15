@@ -1,3 +1,3 @@
 namespace Isitar.RoomPlanner.Logic.Models;
 
-public record Furniture(string Name, decimal Width, decimal Length, decimal Height, string Color);
+public record Furniture(string Name, double Width, double Length, double Height, string Color);

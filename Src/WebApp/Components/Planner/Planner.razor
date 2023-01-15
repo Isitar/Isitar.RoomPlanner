@@ -3,39 +3,45 @@
 @inject IJSRuntime JS
 
 <div class="main">
-    <div class="canvas
-@(isMeasuring ? "is-measuring" : "")
-" @onclick="CanvasClicked"
-         style="@(!string.IsNullOrWhiteSpace(Plan.BackgroundImage) ? $"background-image: url({Plan.BackgroundImage});" : "")">
-        @if (isMeasuring && currentMeasure.EndX != 0m)
+    <svg class="canvas @(isMeasuring ? "is-measuring" : "")"
+         @onclick="CanvasClicked"
+         @onmousemove="async e => await MouseMoved(e)"
+         style="@(!string.IsNullOrWhiteSpace(Plan.BackgroundImage) ? $"background-image: url({Plan.BackgroundImage});" : "")"
+         viewBox="0 0 @svgCanvasViewBox.width @svgCanvasViewBox.height"
+         preserveAspectRatio="none">
+        @if (isMeasuring && currentMeasure.EndX != 0)
         {
-            <div style="border: 3px solid red;
-                    top: @(Math.Min(currentMeasure.EndY, currentMeasure.StartY))px;
-                    left: @(Math.Min(currentMeasure.EndX, currentMeasure.StartX))px;
-                    width: @(Math.Abs(currentMeasure.EndX - currentMeasure.StartX))px;
-                    height: @(Math.Abs(currentMeasure.EndY - currentMeasure.StartY))px;
-"
-            />
-            
+            <rect x="@(Math.Min(currentMeasure.EndX, currentMeasure.StartX))"
+                  y="@(Math.Min(currentMeasure.EndY, currentMeasure.StartY))"
+                  width="@(Math.Abs(currentMeasure.EndX - currentMeasure.StartX))"
+                  height="@(Math.Abs(currentMeasure.EndY - currentMeasure.StartY))"
+                  stroke="red"
+                  stroke-width="3"/>
         }
-        
+
         @foreach (var placedFurniture in Plan.PlacedFurnitures)
         {
-            <div style="
-                top: @ScaleToViewY(placedFurniture.Coordinates.Y)px;
-                left: @ScaleToViewX(placedFurniture.Coordinates.X)px;
-                background: @placedFurniture.Furniture.Color;
-                width: @ScaleToViewX(placedFurniture.Furniture.Width)px;
-                height: @ScaleToViewY(placedFurniture.Furniture.Length)px;
-                "
-                 draggable="true"
-                 @ondragstart="async (e) => await DragStarted(e, placedFurniture)"
-                 @ondragend="async e => await DragEnded(e)"
-                 class="placed-furniture">
-                @placedFurniture.Furniture.Name
-            </div>
+            <polygon
+                points="
+                   @ScaleToViewX(placedFurniture.RotatedCoords().topLeft.X),@ScaleToViewY(placedFurniture.RotatedCoords().topLeft.Y)
+                   @ScaleToViewX(placedFurniture.RotatedCoords().topRight.X),@ScaleToViewY(placedFurniture.RotatedCoords().topRight.Y)
+                   @ScaleToViewX(placedFurniture.RotatedCoords().BottomRight.X),@ScaleToViewY(placedFurniture.RotatedCoords().BottomRight.Y)
+                   @ScaleToViewX(placedFurniture.RotatedCoords().BottomLeft.X),@ScaleToViewY(placedFurniture.RotatedCoords().BottomLeft.Y)
+"
+                style="fill: @placedFurniture.Furniture.Color;
+                @((placedFurniture == currentlySelectedPlacedFurniture) ? "stroke: red;" : "")
+"
+                @onclick:stopPropagation="true" @onclick:preventDefault="true"
+                @onmousedown:stopPropagation="true" @onmousedown:preventDefault="true"
+                @onclick="() => currentlySelectedPlacedFurniture = placedFurniture"
+                @onmouseup="async e => await DragEnded(e)"
+                @onmousedown="async (e) => await DragStarted(e, placedFurniture)"
+                class="placed-furniture">
+                
+            </polygon>
+            <text><text x="@ScaleToViewX(placedFurniture.Coordinates.X)" y="@ScaleToViewY(placedFurniture.Coordinates.Y)">@placedFurniture.Furniture.Name</text></text>
         }
-    </div>
+    </svg>
     <div class="toolbox">
         <h2 class="is-size-5">Plan</h2>
         <label>
@@ -66,49 +72,60 @@
             <FurnitureForm FormSubmitted="furniture => { if (furniture is not null) { Plan.Furnitures.Add(furniture); } showFurnitureForm = false;}"></FurnitureForm>
         }
 
-        <h2> Tools </h2>
+        <h2 class="is-size-5"> Tools </h2>
         <ul>
             <li
                 @onclick="() => { isMeasuring = true; }"
                 class="box mb-1 p-3 @(isMeasuring ? "has-border-top is-primary" : "")">
                 Measure
                 @if (isMeasuring)
-                        {
-                                <div class="field">
-                                    <label class="label">Start</label>
-                                    <div class="field-body">
-                                        <input class="input" @bind="@currentMeasure.StartX"/>
-                                        <input class="input" @bind="@currentMeasure.StartY"/>
-                                        <button class="button is-danger" type="button" @onclick="() => {currentMeasure.StartX = 0; currentMeasure.StartY = 0;}">x</button>
-                                    </div>
-                                </div>
-                                <div class="field">
-                                    <label class="label">End</label>
-                                    <div class="field-body">
-                                        <input class="input" @bind="@currentMeasure.EndX"/>
-                                        <input class="input" @bind="@currentMeasure.EndY"/>
-                                        <button class="button is-danger" type="button" @onclick="() => {currentMeasure.EndX = 0; currentMeasure.EndY = 0;}">x</button>
-                                    </div>
-                                </div>
-                
-                                <div class="field">
-                                    <label class="label">
-                                        Distance
-                                    </label>
-                                    <div class="field-body">
-                                        <input class="input" @bind="@currentMeasure.DistanceX"/>
-                                        <input class="input" @bind="@currentMeasure.DistanceY"/>
-                                    </div>
-                                </div>
-                            <button type="button" class="button is-success" @onclick="ApplyScaling" @onclick:stopPropagation="true">Apply Scaling</button>
-                            <button type="button" class="button is-danger" @onclick="() => { isMeasuring = false; currentMeasure = new Measures(); }" @onclick:stopPropagation="true">Cancel</button>
-                        }
+                {
+                    <div class="field">
+                        <label class="label">Start</label>
+                        <div class="field-body">
+                            <input class="input" @bind="@currentMeasure.StartX"/>
+                            <input class="input" @bind="@currentMeasure.StartY"/>
+                            <button class="button is-danger" type="button" @onclick="() => {currentMeasure.StartX = 0; currentMeasure.StartY = 0;}">x</button>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label">End</label>
+                        <div class="field-body">
+                            <input class="input" @bind="@currentMeasure.EndX"/>
+                            <input class="input" @bind="@currentMeasure.EndY"/>
+                            <button class="button is-danger" type="button" @onclick="() => {currentMeasure.EndX = 0; currentMeasure.EndY = 0;}">x</button>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="label">
+                            Distance
+                        </label>
+                        <div class="field-body">
+                            <input class="input" @bind="@currentMeasure.DistanceX"/>
+                            <input class="input" @bind="@currentMeasure.DistanceY"/>
+                        </div>
+                    </div>
+                    <button type="button" class="button is-success" @onclick="ApplyScaling" @onclick:stopPropagation="true">Apply Scaling</button>
+                    <button type="button" class="button is-danger" @onclick="() => { isMeasuring = false; currentMeasure = new Measures(); }" @onclick:stopPropagation="true">Cancel</button>
+                }
             </li>
         </ul>
-        
-
-        <code>
-        </code>
+        @if (currentlySelectedPlacedFurniture is not null)
+        {
+            <h2 class="is-size-5">@currentlySelectedPlacedFurniture.Furniture.Name</h2>
+            <div class="box">
+               x: @currentlySelectedPlacedFurniture.Coordinates.X <br/>
+               y: @currentlySelectedPlacedFurniture.Coordinates.Y <br/>
+               <div class="field">
+                   <div class="field-label"><label class="label">&alpha;</label></div>
+                   <div class="field-body"><input class="input" @bind="currentlySelectedPlacedFurniture.RotationInDeg" /></div>
+               </div>
+               <button class="button is-danger" type="button" @onclick="() => { RemovePlacedFurniture(currentlySelectedPlacedFurniture); currentlySelectedPlacedFurniture = null;}">x</button>
+            </div>
+                                                                                  
+                                                                                  
+        }
     </div>
 </div>
 
@@ -116,19 +133,19 @@
 {
     class Measures
     {
-        public decimal StartX { get; set; }
-        public decimal StartY { get; set; }
-        public decimal EndX { get; set; }
-        public decimal EndY { get; set; }
-        public decimal DistanceX { get; set; }
-        public decimal DistanceY { get; set; }
+        public double StartX { get; set; }
+        public double StartY { get; set; }
+        public double EndX { get; set; }
+        public double EndY { get; set; }
+        public double DistanceX { get; set; }
+        public double DistanceY { get; set; }
     }
 
     [Parameter]
     public Plan Plan { get; set; } = null!;
 
     [JSInvokable]
-    public async Task CanvasResized(decimal width, decimal height)
+    public async Task CanvasResized(double width, double height)
     {
         if (canvasDimensions != (width, height))
         {
@@ -137,12 +154,14 @@
         }
     }
 
-    private (decimal width, decimal height) canvasDimensions;
+    private (double width, double height) canvasDimensions;
+    private (double width, double height) svgCanvasViewBox = (1000, 1000);
     private DotNetObjectReference<Planner> objRef;
 
     private bool showFurnitureForm = false;
 
     private bool isMeasuring = false;
+    private bool isDragging = false;
 
     private Measures currentMeasure = new();
 
@@ -165,39 +184,49 @@
         await base.OnAfterRenderAsync(firstRender);
     }
 
-    private decimal ScaleToViewX(decimal m)
+    private double ScaleToViewX(double m)
     {
-        return m * Plan.ScaleFactorX(canvasDimensions.width);
+        return m * Plan.ScaleFactorX(svgCanvasViewBox.width);
     }
 
-    private decimal ScaleToViewY(decimal m)
+    private double ScaleToViewY(double m)
     {
-        return m * Plan.ScaleFactorY(canvasDimensions.height);
+        return m * Plan.ScaleFactorY(svgCanvasViewBox.height);
     }
 
-    private decimal ScaleToPlanX(decimal px)
+    private double ScaleToPlanX(double px)
     {
-        return px / Plan.ScaleFactorX(canvasDimensions.width);
+        return px / Plan.ScaleFactorX(svgCanvasViewBox.width);
     }
 
-    private decimal ScaleToPlanY(decimal px)
+    private double ScaleToPlanY(double px)
     {
-        return px / Plan.ScaleFactorY(canvasDimensions.height);
+        return px / Plan.ScaleFactorY(svgCanvasViewBox.height);
     }
 
-    private void CanvasClicked(MouseEventArgs eventArgs)
+    private void CanvasClicked(MouseEventArgs e)
     {
+        if (isDragging)
+        {
+            return;
+        }
+        if (currentlySelectedPlacedFurniture is not null)
+        {
+            currentlySelectedPlacedFurniture = null;
+        }
+        
+        var (x, y) = RelativeCoordinates(e);
         if (isMeasuring)
         {
             if (currentMeasure.StartX > 0 || currentMeasure.StartY > 0)
             {
-                currentMeasure.EndX = (decimal)eventArgs.OffsetX;
-                currentMeasure.EndY = (decimal)eventArgs.OffsetY;
+                currentMeasure.EndX = x;
+                currentMeasure.EndY = y;
             }
             else
             {
-                currentMeasure.StartX = (decimal)eventArgs.OffsetX;
-                currentMeasure.StartY = (decimal)eventArgs.OffsetY;
+                currentMeasure.StartX = x;
+                currentMeasure.StartY = y;
             }
             return;
         }
@@ -207,14 +236,14 @@
             Plan.PlacedFurnitures.Add(new PlacedFurniture
             {
                 Furniture = selectedFurniture,
-                Coordinates = (ScaleToPlanX((decimal)eventArgs.OffsetX),ScaleToPlanY((decimal)eventArgs.OffsetY)),
+                Coordinates = new Coordinates(ScaleToPlanX(x),ScaleToPlanY(y)),
             });
         }
     }
 
     private async Task ApplyScaling()
     {
-        if (currentMeasure.DistanceX == 0m)
+        if (currentMeasure.DistanceX == 0d)
         {
             return;
         }
@@ -222,10 +251,10 @@
         var pxDistanceX = Math.Abs(currentMeasure.EndX - currentMeasure.StartX);
         var pxDistanceY = Math.Abs(currentMeasure.EndY - currentMeasure.StartY);
 
-        Plan.CalibratedAtWidth = canvasDimensions.width;
+        Plan.CalibratedAtWidth = svgCanvasViewBox.width;
         Plan.CalibratedWidthForOneUnit = pxDistanceX / currentMeasure.DistanceX;
 
-        Plan.CalibratedAtHeight = canvasDimensions.height;
+        Plan.CalibratedAtHeight = svgCanvasViewBox.height;
         Plan.CalibratedHeightForOneUnit = pxDistanceY == 0 || currentMeasure.DistanceY == 0 ? Plan.CalibratedWidthForOneUnit : pxDistanceY / currentMeasure.DistanceY;
 
         isMeasuring = false;
@@ -239,23 +268,63 @@
         Plan.BackgroundImage = $"data:{e.File.ContentType};base64,{content}";
     }
 
-    private async Task DragStarted(DragEventArgs e, PlacedFurniture placedFurniture)
+    private async Task DragStarted(MouseEventArgs e, PlacedFurniture placedFurniture)
     {
-        startDragX = (decimal) e.ClientX;
-        startDragY = (decimal)e.ClientY;
+        (startDragX, startDragY) = ((double)e.ClientX, (double)e.ClientY);
         currentlySelectedPlacedFurniture = placedFurniture;
+        isDragging = true;
+        Console.WriteLine("dragstarted called");
     }
 
-    private decimal startDragX = 0;
-    private decimal startDragY = 0;
-    
-    private async Task DragEnded(DragEventArgs e)
+    private double startDragX = 0;
+    private double startDragY = 0;
+
+    private (double x, double y) RelativeCoordinates(MouseEventArgs e)
     {
-       var endDragX = (decimal)e.ClientX;
-      var  endDragY = (decimal)e.ClientY;
-        currentlySelectedPlacedFurniture.Coordinates = (currentlySelectedPlacedFurniture.Coordinates.X + ScaleToPlanX(endDragX - startDragX), 
-            currentlySelectedPlacedFurniture.Coordinates.Y + ScaleToPlanY(endDragY - startDragY)
+        return RelativeCoordinates(((double)e.OffsetX, (double)e.OffsetY));
+    }
+
+    private (double x, double y) RelativeCoordinates((double x, double y) coords)
+    {
+        return (
+            coords.x * (svgCanvasViewBox.width / canvasDimensions.width),
+                coords.y * (svgCanvasViewBox.height / canvasDimensions.height)
             );
+    }
+
+    private async Task DragEnded(MouseEventArgs e)
+    {
+            if (currentlySelectedPlacedFurniture is null || !isDragging)
+            {
+                return;
+            }
+            var (deltaX, deltaY) = RelativeCoordinates(((double)e.ClientX - startDragX, (double)e.ClientY - startDragY));
+            currentlySelectedPlacedFurniture.Coordinates = new Coordinates(
+                currentlySelectedPlacedFurniture.Coordinates.X + ScaleToPlanX(deltaX), 
+                    currentlySelectedPlacedFurniture.Coordinates.Y + ScaleToPlanY(deltaY)
+                );
+        
+
         currentlySelectedPlacedFurniture = null;
+        isDragging = false;
+    }
+
+    private async Task MouseMoved(MouseEventArgs e)
+    {
+        if (currentlySelectedPlacedFurniture is null || !isDragging)
+        {
+            return;
+        }
+            var (deltaX, deltaY) = RelativeCoordinates(((double)e.ClientX - startDragX, (double)e.ClientY - startDragY));
+            currentlySelectedPlacedFurniture.Coordinates = new Coordinates(
+                currentlySelectedPlacedFurniture.Coordinates.X + ScaleToPlanX(deltaX), 
+                    currentlySelectedPlacedFurniture.Coordinates.Y + ScaleToPlanY(deltaY)
+                );
+            (startDragX, startDragY) = ((double)e.ClientX, (double)e.ClientY);
+    }
+
+    private void RemovePlacedFurniture(PlacedFurniture placedFurniture)
+    {
+        Plan.PlacedFurnitures.Remove(placedFurniture);
     }
 }
