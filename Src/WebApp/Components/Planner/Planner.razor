@@ -41,7 +41,14 @@
                 class="placed-furniture">
                 
             </polygon>
-            <text><text x="@ScaleToViewX(placedFurniture.Coordinates.X)" y="@ScaleToViewY(placedFurniture.Coordinates.Y)">@placedFurniture.Furniture.Name</text></text>
+            <text><text 
+                      x="@ScaleToViewX(Math.Min(Math.Min(placedFurniture.RotatedCoords().topLeft.X, placedFurniture.RotatedCoords().topRight.X),Math.Min(placedFurniture.RotatedCoords().BottomLeft.X, placedFurniture.RotatedCoords().BottomRight.X)))"
+                      y="@ScaleToViewY(Math.Min(Math.Min(placedFurniture.RotatedCoords().topLeft.Y, placedFurniture.RotatedCoords().topRight.Y),Math.Min(placedFurniture.RotatedCoords().BottomLeft.Y, placedFurniture.RotatedCoords().BottomRight.Y)))"
+                   
+                  style="stroke: @placedFurniture.Furniture.Color; fill: @placedFurniture.Furniture.Color"
+                        >
+                @placedFurniture.Furniture.Name
+            </text></text>
         }
     </svg>
     <div class="toolbox">
@@ -59,12 +66,18 @@
             {
                 <li class="box mb-1 p-3 @(furniture == selectedFurniture ? "has-border-top is-primary" : "")"
                     @onclick="() => selectedFurniture = furniture">
-                    <p class="is-bold">@furniture.Name</p>
-                    <p>
-                        <small>
-                            w: @furniture.Width, l: @furniture.Length, h: @furniture.Height
-                        </small>
-                    </p>
+                    <div class="level">
+                        <div class="level-left">
+                            <div>
+                                <p class="is-bold">@furniture.Name</p>
+                                <p><small>w: @furniture.Width, l: @furniture.Length, h: @furniture.Height</small></p>
+                            </div>
+                        </div>
+                        <div class="level-right">
+                            <button type="button" class="button is-danger" @onclick="() => RemoveFurniture(furniture)">x</button>
+                        </div>
+                    </div>
+                    
                 </li>
             }
         </ul>
@@ -331,5 +344,15 @@
         using var streamRef = new DotNetStreamReference(stream: serializedStream);
 
         await JS.InvokeVoidAsync("downloadFileFromStream", fileName, streamRef);
+    }
+
+    private void RemoveFurniture(Furniture furniture)
+    {
+        Plan.Furnitures.Remove(furniture);
+        foreach (var placedFurniture in Plan.PlacedFurnitures.Where(pf => pf.Furniture == furniture).ToList())
+        {
+            Plan.PlacedFurnitures.Remove(placedFurniture);
+        }
+        selectedFurniture = null;
     }
 }

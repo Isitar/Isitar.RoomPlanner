@@ -33,8 +33,8 @@ public class PlacedFurniture
 
         var topLeft = transform(new Coordinates(0, 0)) + Coordinates;
         var topRight = transform(new Coordinates(Furniture.Width, 0)) + Coordinates;
-        var bottomRight = transform(new Coordinates(Furniture.Width, Furniture.Height)) + Coordinates;
-        var bottomLeft = transform(new Coordinates(0, Furniture.Height)) + Coordinates;
+        var bottomRight = transform(new Coordinates(Furniture.Width, Furniture.Length)) + Coordinates;
+        var bottomLeft = transform(new Coordinates(0, Furniture.Length)) + Coordinates;
         return (topLeft, topRight, bottomRight, bottomLeft);
     }
 }

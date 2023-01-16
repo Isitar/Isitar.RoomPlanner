@@ -43,7 +43,18 @@
                 </div>
                 <div class="field-body">
                     <div class="control">
-                        <input class="input" @bind="color" />
+                        <div class="select">
+                            <select @bind="color">
+                                <option value="#000000">black</option>
+                                <option value="#ff0000">red</option>
+                                <option value="#ff7f00">orange</option>
+                                <option value="#ffff00">yellow</option>
+                                <option value="#00ff00">green</option>
+                                <option value="#0000ff">blue</option>
+                                <option value="#4b00b2">purple</option>
+                                <option value="#9400d3">purplelight</option>
+                            </select>
+                        </div>
                     </div>                    
                 </div>
             </div>

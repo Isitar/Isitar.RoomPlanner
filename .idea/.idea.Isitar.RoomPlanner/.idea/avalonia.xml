@@ -7,6 +7,7 @@
         <entry key="App/Components/Title.axaml" value="App/App.csproj" />
         <entry key="App/MainWindow.axaml" value="App/App.csproj" />
         <entry key="App/Planner.axaml" value="App/App.csproj" />
+        <entry key="Src/App/Planner/PlannerWindow.axaml" value="Src/App/App.csproj" />
       </map>
     </option>
   </component>
