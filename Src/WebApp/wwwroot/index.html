@@ -40,14 +40,12 @@
                      resizedObjectMap[entry.target] = {};
                      resizedObjectMap[entry.target].width = width;
                      resizedObjectMap[entry.target].height = height;
-                     console.log('resize triggered');
                      dotnetHelper.invokeMethodAsync('CanvasResized', width, height)
                  }
                 } catch (_) {
                     resizedObjectMap[entry.target] = {};
                     resizedObjectMap[entry.target].width = width;
                     resizedObjectMap[entry.target].height = height;
-                    console.log('resize triggered');
                     dotnetHelper.invokeMethodAsync('CanvasResized', width, height)
                 }
             }
