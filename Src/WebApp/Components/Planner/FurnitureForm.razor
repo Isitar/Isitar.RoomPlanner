@@ -1,6 +1,6 @@
 @using Isitar.RoomPlanner.Logic.Models
 <div class="modal is-active">
-    <div class="modal-background" />
+    <div class="modal-background"/>
     <div class="modal-content">
         <form class="box">
             <div class="field is-horizontal">
@@ -39,7 +39,7 @@
             </div>
             <div class="field is-horizontal">
                 <div class="field-label is-normal">
-                    <label class="label">Color</label>    
+                    <label class="label">Color</label>
                 </div>
                 <div class="field-body">
                     <div class="control">
@@ -55,16 +55,16 @@
                                 <option value="#9400d3">purplelight</option>
                             </select>
                         </div>
-                    </div>                    
+                    </div>
                 </div>
             </div>
             <div class="has-text-right">
-            <button type="button" class="button is-success" @onclick="Save">Save</button>    
-            <button type="button" class="button is-danger" @onclick="Cancel">Cancel</button>    
+                <button type="button" class="button is-success" @onclick="Save">Save</button>
+                <button type="button" class="button is-danger" @onclick="Cancel">Cancel</button>
             </div>
-            
+
         </form>
-        </div>
+    </div>
 </div>
 
 @code
@@ -80,7 +80,7 @@
     private double? length;
     private double? height;
     private string? color;
-    
+
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
@@ -89,16 +89,15 @@
             name = Furniture.Name;
             width = Furniture.Width;
             length = Furniture.Length;
-            height = Furniture.Height;
             color = Furniture.Color;
         }
     }
 
     public async Task Save()
     {
-        await FormSubmitted.InvokeAsync(new Furniture(name, width.Value, length.Value, height.Value, color));
+        await FormSubmitted.InvokeAsync(new Furniture(name, width.Value, length.Value, color));
     }
-    
+
     public async Task Cancel()
     {
         await FormSubmitted.InvokeAsync(null);

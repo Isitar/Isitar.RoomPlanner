@@ -70,7 +70,7 @@
                         <div class="level-left">
                             <div>
                                 <p class="is-bold">@furniture.Name</p>
-                                <p><small>w: @furniture.Width, l: @furniture.Length, h: @furniture.Height</small></p>
+                                <p><small>w: @furniture.Width, l: @furniture.Length</small></p>
                             </div>
                         </div>
                         <div class="level-right">
@@ -267,7 +267,7 @@
     private async Task SetBackgroundFile(InputFileChangeEventArgs e)
     {
         using var ms = new MemoryStream();
-        await e.File.OpenReadStream().CopyToAsync(ms);
+        await e.File.OpenReadStream(maxAllowedSize: 1024L * 1024 * 1024 * 500).CopyToAsync(ms);
         var content = Convert.ToBase64String(ms.ToArray());
         Plan.BackgroundImage = $"data:{e.File.ContentType};base64,{content}";
     }

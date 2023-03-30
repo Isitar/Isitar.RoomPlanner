@@ -13,8 +13,8 @@ public partial class PlannerWindow : Window
     {
         InitializeComponent();
         var fakePlan = new Plan("Unnamed Plan");
-        fakePlan.Furnitures.Add(new Furniture("Furniture 1", 10, 20, 30, "red"));
-        fakePlan.Furnitures.Add(new Furniture("Furniture 2", 40, 50, 60, "green"));
+        fakePlan.Furnitures.Add(new Furniture("Furniture 1", 10, 20,  "red"));
+        fakePlan.Furnitures.Add(new Furniture("Furniture 2", 40, 50,  "green"));
         vm = new PlannerVm(fakePlan);
     }
     public PlannerWindow(PlannerVm vm) : this()
